@@ -27,8 +27,6 @@ jobs:
       - run: go get -v -t -d ./...
       - run: go test -v ./...
 
-      - run: sudo composer self-update
-      - run: composer install -n --prefer-dist
       - run: curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
       - run: chmod +x ./cc-test-reporter
       - run: sudo docker-php-ext-enable xdebug
