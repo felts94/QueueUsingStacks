@@ -6,14 +6,14 @@ import (
 
 type Queue struct {
 	Inverted bool //always init as true
-	S        *stacks.Stack
+	S        stacks.Stack
 }
 
 func (q *Queue) Enqueue(elem interface{}) {
 	if q.Inverted {
 		q.S.Push(elem)
 	} else {
-		temp := &stacks.Stack{}
+		temp := stacks.Stack{}
 		telem := q.S.Pop()
 		for telem != nil {
 			temp.Push(telem)
@@ -27,7 +27,7 @@ func (q *Queue) Enqueue(elem interface{}) {
 
 func (q *Queue) Dequeue() interface{} {
 	if q.Inverted {
-		temp := &stacks.Stack{}
+		temp := stacks.Stack{}
 		elem := q.S.Pop()
 		for elem != nil {
 			temp.Push(elem)
@@ -45,6 +45,6 @@ func (q *Queue) Dequeue() interface{} {
 func NewQueuePointer() *Queue {
 	return &Queue{
 		Inverted: true,
-		S:        &stacks.Stack{},
+		S:        stacks.Stack{},
 	}
 }
