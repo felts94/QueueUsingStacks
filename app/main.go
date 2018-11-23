@@ -2,8 +2,10 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/felts94/QueueUsingStacks/queues"
 	"github.com/felts94/QueueUsingStacks/stacks"
@@ -56,10 +58,21 @@ func PopFromQueue(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	var PORT string
+	if PORT = os.Getenv("PORT"); PORT == "" {
+		PORT = "8180"
+	}
+
 	router := mux.NewRouter()
+	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "Hello, World!")
+	})
+	router.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "ok")
+	})
 	router.HandleFunc("/stack/push", PushToStack).Methods("POST")
 	router.HandleFunc("/stack/pop", PopFromStack).Methods("GET")
 	router.HandleFunc("/queue/push", PushToQueue).Methods("POST")
 	router.HandleFunc("/queue/pop", PopFromQueue).Methods("GET")
-	log.Fatal(http.ListenAndServe(":8180", router))
+	log.Fatal(http.ListenAndServe(":"+PORT, router))
 }
