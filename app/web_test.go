@@ -145,7 +145,7 @@ func TestQueue(t *testing.T) {
 	things = things[:900]
 	log.Println("Queue Push " + strconv.Itoa(len(things)) + " things")
 	client := &http.Client{}
-	for ij, tg := range things {
+	for _, tg := range things {
 		res1, err := client.Post(appUrl[2]+"push", "application/json", bytes.NewReader(tg.toBytes()))
 		defer res1.Body.Close()
 		if err != nil {
