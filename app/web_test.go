@@ -6,6 +6,7 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -14,8 +15,8 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-	"strings"
 	"testing"
+	"time"
 )
 
 var appUrl = []string{
@@ -35,7 +36,7 @@ type thing struct {
 
 func (t thing) toBytes() []byte {
 	//log.Println(t)
-	return []byte(`{"FName":"` + t.FName + `",LName":"` + t.LName + `","Number":` + strconv.Itoa(t.Number) + `}`)
+	return []byte(`{"FName":"` + t.FName + `","LName":"` + t.LName + `","Number":` + strconv.Itoa(t.Number) + `}`)
 }
 
 func readFileWithReadString(fn string) []string {
@@ -68,6 +69,7 @@ func readFileWithReadString(fn string) []string {
 }
 
 func makeThings() []thing {
+	rand.Seed(time.Now().UTC().UnixNano())
 	var things []thing
 	names := readFileWithReadString("names")
 	for i, name := range names {
@@ -85,21 +87,26 @@ func makeThings() []thing {
 }
 
 func TestStack(t *testing.T) {
-	var err error
-	//push array of items
 	//make array
-	things := makeThings()
-	//log.Println(string(things[1].toBytes()))
 	//loop over array and push the item
 	//iterate over items and pop items to check equality
 	//test pass
-	//stackpush
+
+	things := makeThings()
+	things = things[:900]
 	log.Println("Stack Push " + strconv.Itoa(len(things)) + " things")
 	client := &http.Client{}
 	for _, tg := range things {
-		_, err = client.Post(appUrl[0]+"push", "application/json", strings.NewReader(string(tg.toBytes())))
-		_, err = client.Post(appUrl[1]+"push", "application/json", strings.NewReader(string(tg.toBytes())))
+		res1, err := client.Post(appUrl[0]+"push", "application/json", bytes.NewReader(tg.toBytes()))
+		defer res1.Body.Close()
 		if err != nil {
+			log.Println(err)
+			t.FailNow()
+		}
+		res2, err := client.Post(appUrl[1]+"push", "application/json", bytes.NewReader(tg.toBytes()))
+		defer res2.Body.Close()
+		if err != nil {
+			log.Println(err)
 			t.FailNow()
 		}
 	}
@@ -108,85 +115,71 @@ func TestStack(t *testing.T) {
 	for i, _ := range things {
 		resp1, err := client.Get(appUrl[0] + "pop")
 		resp2, err := client.Get(appUrl[1] + "pop")
-		//log.Println(resp, err)
 		defer resp1.Body.Close()
 		defer resp2.Body.Close()
-		t1 := new(thing)
-		t2 := new(thing)
-		log.Println("decode t1", &t1)
+		var t1 *thing
+		var t2 *thing
 		err = json.NewDecoder(resp1.Body).Decode(&t1)
 		if err != nil {
 			log.Println(err)
 		}
-		log.Println("decode t2", &t2)
 		err = json.NewDecoder(resp2.Body).Decode(&t2)
 		if err != nil {
 			log.Println(err)
 		}
-		log.Println(t1, t2, *t1, *t2, things[len(things)-i-1])
+		log.Println(*t1, *t2, "==", things[len(things)-i-1])
 		if *t1 != things[len(things)-i-1] || *t2 != things[len(things)-i-1] {
 			t.FailNow()
 		}
 	}
 
-	// err = json.NewDecoder(resp.Body).Decode(&target)
-	// //log.Println(target, stack)
-	// lastIn := target[0]
-
-	// //stack pop
-	// resp, err = client.Get(appUrl[0] + "pop")
-	// //log.Println(resp, err)
-	// defer resp.Body.Close()
-	// targ := new(map[string]interface{})
-
-	// err = json.NewDecoder(resp.Body).Decode(&targ)
-	// if err != nil {
-	// 	log.Println(err)
-	// }
-	// // m1 and m2 are the maps we want to compare
-	// eq := reflect.DeepEqual(*targ, lastIn)
-	// if eq {
-	// 	fmt.Println("They're equal.")
-	// } else {
-	// 	fmt.Println("They're unequal.")
-	// }
-
 }
 
-func pushArrayOfItems() {
+func TestQueue(t *testing.T) {
+	//make array
+	//loop over array and push the item
+	//iterate over items and pop items to check equality
+	//test pass
+
+	things := makeThings()
+	things = things[:900]
+	log.Println("Queue Push " + strconv.Itoa(len(things)) + " things")
+	client := &http.Client{}
+	for ij, tg := range things {
+		res1, err := client.Post(appUrl[2]+"push", "application/json", bytes.NewReader(tg.toBytes()))
+		defer res1.Body.Close()
+		if err != nil {
+			log.Println(err)
+			t.FailNow()
+		}
+		res2, err := client.Post(appUrl[3]+"push", "application/json", bytes.NewReader(tg.toBytes()))
+		defer res2.Body.Close()
+		if err != nil {
+			log.Println(err)
+			t.FailNow()
+		}
+	}
+
+	log.Println("Pop things to check equallity")
+	for i, _ := range things {
+		resp1, err := client.Get(appUrl[2] + "pop")
+		resp2, err := client.Get(appUrl[3] + "pop")
+		defer resp1.Body.Close()
+		defer resp2.Body.Close()
+		var t1 *thing
+		var t2 *thing
+		err = json.NewDecoder(resp1.Body).Decode(&t1)
+		if err != nil {
+			log.Println(err)
+		}
+		err = json.NewDecoder(resp2.Body).Decode(&t2)
+		if err != nil {
+			log.Println(err)
+		}
+		log.Println(*t1, *t2, "==", things[i])
+		if *t1 != things[i] || *t2 != things[i] {
+			t.FailNow()
+		}
+	}
 
 }
-
-func popItem() {
-
-}
-
-func TestStackPop(t *testing.T) {
-
-}
-
-// func PushToStackAPI(url string, item interface{}) *http.Response {
-// 	c := &http.Client{}
-// 	stackBase := sling.New().Base(stackUrl).Client(c)
-// 	path := "push"
-
-// 	body := &PushRequest{
-// 		Name: "Kyle",
-// 		Attr: []Attributes{
-// 			{
-// 				Key:   "id",
-// 				Value: "ie69",
-// 			},
-// 		},
-// 	}
-// 	req, err := stackBase.New().Post(path).BodyJSON(body).Request()
-// 	if err != nil {
-// 		log.Println(err)
-// 		t.Fail()
-// 	}
-// 	log.Println(req)
-// }
-
-// func PopFromStack() {
-
-// }

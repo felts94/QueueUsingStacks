@@ -24,14 +24,13 @@ func PushToStack(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	mystack.Push(t)
-	json.NewEncoder(w).Encode(mystack)
+	//json.NewEncoder(w).Encode(mystack)
 }
 
 func PopFromStack(w http.ResponseWriter, r *http.Request) {
 	item := mystack.Pop()
 	if item == nil {
 		log.Println("Nothing in stack")
-		w.Header().Set("Status Code", "404")
 	}
 	json.NewEncoder(w).Encode(item)
 }
@@ -45,7 +44,7 @@ func PushToQueue(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	myqueue.Enqueue(t)
-	json.NewEncoder(w).Encode(myqueue)
+	//json.NewEncoder(w).Encode(myqueue)
 }
 
 func PopFromQueue(w http.ResponseWriter, r *http.Request) {
