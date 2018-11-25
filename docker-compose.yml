@@ -1,0 +1,10 @@
+version: '3'
+services:
+  stacker-one:
+    build: .
+    ports:
+    - "8180:8180"
+  stacker-two:
+    build: .
+    ports:
+    - "8280:8180"
