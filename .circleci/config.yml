@@ -20,7 +20,7 @@ jobs:
     #### expecting it in the form of
     ####   /go/src/github.com/circleci/go-tool
     ####   /go/src/bitbucket.org/circleci/go-tool
-    working_directory: /go/src/github.com/felts94/QueueUsingStacks
+    working_directory: ~/go/src/github.com/felts94/QueueUsingStacks
     steps:
       - checkout
 
@@ -29,7 +29,7 @@ jobs:
       - run: go get -v -t -d ./...
       - run: go test -v -cover ./...
       # get containers up on 8180 and 8280
-      - setup_remote_docker
+      # - setup_remote_docker
       - run: docker-compose up -d
       - run: go test -tags integration ./...
         # upload test report to Code Climate using `after-build`
