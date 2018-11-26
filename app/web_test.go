@@ -39,6 +39,7 @@ func (t thing) toBytes() []byte {
 	return []byte(`{"FName":"` + t.FName + `","LName":"` + t.LName + `","Number":` + strconv.Itoa(t.Number) + `}`)
 }
 
+//Taken directly from SO
 func readFileWithReadString(fn string) []string {
 
 	file, err := os.Open(fn)

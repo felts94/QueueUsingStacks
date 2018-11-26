@@ -1,10 +1,16 @@
 version: '3'
 services:
-  stacker-one:
+  stacker_one:
     build: .
+    # network_mode: "host"
+    expose:
+      - 8180
     ports:
-    - "8180:8180"
-  stacker-two:
+    - 8180:8180
+  stacker_two:
     build: .
+    # network_mode: "host"
+    expose:
+      - 8280
     ports:
-    - "8280:8180"
+    - 8280:8180
