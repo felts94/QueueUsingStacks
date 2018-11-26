@@ -4,11 +4,12 @@
 version: 2
 jobs:
   build:
-    environment:
-      CC_TEST_REPORTER_ID: afdbfba170f2891d4deac9d512bf6d14f9b85f7db455c5802b1fbc0687149441
-    docker:
-      # specify the version
-      - image: circleci/golang:1.9
+    machine: true
+    # environment:
+    #   CC_TEST_REPORTER_ID: afdbfba170f2891d4deac9d512bf6d14f9b85f7db455c5802b1fbc0687149441
+    # docker:
+    #   # specify the version
+    #   - image: circleci/golang:1.9
       
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
