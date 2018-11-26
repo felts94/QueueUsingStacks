@@ -21,7 +21,7 @@ jobs:
     ####   /go/src/github.com/circleci/go-tool
     ####   /go/src/bitbucket.org/circleci/go-tool
     working_directory: ~/go/src/github.com/felts94/QueueUsingStacks
-    steps:
+    test:
       - checkout
 
       # specify any bash command here prefixed with `run: `
@@ -33,3 +33,12 @@ jobs:
       - run: docker-compose up -d
       - run: go test -tags integration ./...
         # upload test report to Code Climate using `after-build`
+      - deploy:
+        name: Push latest
+        command: |
+          if [ "$ {CIRCLE_BRANCH}" == "master" ]; then
+            docker login -u {$DOCKER_UNAME} -p {$DOCKER_PASS}
+            docker tag app "kfelter/stacker:latest"
+            docker push "kfelter/stacker:latest"
+          fi 
+
