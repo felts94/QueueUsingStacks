@@ -56,6 +56,60 @@ func PopFromQueue(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(item)
 }
 
+type Status struct {
+	Length    int           `json:"length,omitempty"`
+	NextThree []interface{} `json:"next_three,omitempty"`
+	LastThree []interface{} `json:"last_three,omitempty"`
+}
+
+func StackStatus(w http.ResponseWriter, r *http.Request) {
+	if len(mystack) > 3 {
+		json.NewEncoder(w).Encode(Status{
+			Length:    len(mystack),
+			NextThree: mystack[0:3],
+			LastThree: mystack[len(mystack)-4:],
+		})
+	} else {
+		json.NewEncoder(w).Encode(Status{
+			Length:    len(mystack),
+			NextThree: mystack,
+		})
+	}
+}
+
+func QueueStatus(w http.ResponseWriter, r *http.Request) {
+	if len(myqueue.S) > 3 && !myqueue.Inverted {
+		json.NewEncoder(w).Encode(Status{
+			Length:    len(myqueue.S),
+			NextThree: myqueue.S[0:3],
+			LastThree: myqueue.S[len(myqueue.S)-4:],
+		})
+	} else if len(myqueue.S) > 3 {
+		json.NewEncoder(w).Encode(Status{
+			Length:    len(myqueue.S),
+			NextThree: myqueue.S[len(myqueue.S)-4:],
+			LastThree: myqueue.S[0:3],
+		})
+	} else if !myqueue.Inverted {
+		//invert queue
+		var item []int
+		item = append(item, 1)
+
+		myqueue.Enqueue(item)
+		_ = myqueue.Dequeue()
+
+		json.NewEncoder(w).Encode(Status{
+			Length:    len(myqueue.S),
+			NextThree: myqueue.S,
+		})
+	} else {
+		json.NewEncoder(w).Encode(Status{
+			Length:    len(myqueue.S),
+			NextThree: myqueue.S,
+		})
+	}
+}
+
 func main() {
 	var PORT string
 	if PORT = os.Getenv("PORT"); PORT == "" {
@@ -69,9 +123,15 @@ func main() {
 	router.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "ok")
 	})
+	//stack endpoints
 	router.HandleFunc("/stack/push", PushToStack).Methods("POST")
 	router.HandleFunc("/stack/pop", PopFromStack).Methods("GET")
+	router.HandleFunc("/stack/status", StackStatus).Methods("GET")
+
+	//queue endpoints
 	router.HandleFunc("/queue/push", PushToQueue).Methods("POST")
 	router.HandleFunc("/queue/pop", PopFromQueue).Methods("GET")
+	router.HandleFunc("/queue/status", QueueStatus).Methods("GET")
+
 	log.Fatal(http.ListenAndServe(":"+PORT, router))
 }
